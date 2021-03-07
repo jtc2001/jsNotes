@@ -1,0 +1,315 @@
+execution context
+- global execution context
+- build callstack
+- global is popped off when global is popped off
+
+global execution context
+ - global object
+ - this operator
+ - they are the same (in browser global object === this, in node called global)
+
+ creation phase and execution phase is run on any function execution
+
+lexical environment
+  - Where you define the code
+    -- function can be in global scope
+    -- nested function would be in the outer function
+    -- regardless of where it's called (dynamic scope)
+
+function expression:
+  - var sing = function() { console.log('singing'); }
+  - var walk = () => { console.log('walking'); }
+  - can only be accessed in their own scope NOT global scope
+
+function declaration:
+  function sing() { console.log('singing'); }
+
+hoisting
+  - hoisting is really doing a pass and allocating memory
+  - var (not let or const)
+    -- partially hoisted, only the left hand side hoisted for allocation, not the value
+  - var function expressions are hoisted but function within is NOT defined
+  - functions, completely hoisted
+      + unless you don't start with function i.e. (someOperation() { console.log('hi'); })
+      + because was surrounded by parens did not hoist
+  - const and let keywords are NOT hoisted
+
+function invocation
+  - you get
+    -- execution context
+    -- this
+    -- arguments
+      + function marry(person1, person2) { console.log(arguments); }
+      + marry('Tim', 'Tina'); -> {0: 'Tim', 1: 'Tina'}
+      + avoid using arguments for optimization
+      + alternative: function marry(...args) { console.log(args); }
+    -- variable environment
+      + where variables live in execution context (holds local variables)
+    -- Functoin constructors: const four = new Function('num','return num');
+      + four(4)
+    -- all functions are really objects
+
+scope chain
+  all functions are in global lexical environment
+  all have access to global variables
+  scopes have a reference [[scopes]]
+
+nested functions
+  - function sayMyName() {
+      return function findMyName() {
+        return function printName() { console.log('My Name'); }
+      }
+    }
+    -- to execute inner functions use syntax: sayMyName()()() -> runs function two levels deep
+    -- calling sayMyName() would just return findMyName function not execute it
+
+function scope vs block scope
+  - block scope
+    -- (does not exist for var does exist for let and const)
+    -- if(5 > 4) { var secret = '123456'; }
+    -- console.log(secret); -> '123456'
+    -- since not in function scope, block scope doesn't exist for vars DOES exist for const and let
+
+IIFE (immediately invoked function expression)
+  - (function() {})();
+   -- outer parens make it a function expression
+   -- immediately invoked
+   -- can't call it, invalid: function(){}()
+
+this operator (is the object that the function is a property of)
+  - based on who calls the function
+  - depends on what is left of the '.'
+  - not lexically scoped
+  - dynamically scoped
+  - arrow functions do have a lexically scoped this
+
+call function
+  - built in
+  - function a() { console.log('hi'); }
+  - implicitly called when invoking function
+  - i.e. a.call()
+  - a.apply() would do same thing
+  - call can be applied to a different object!
+    -- const wizard = { name: 'Merlin', health: 100, heal() { return this.health = 100; } }
+       const archer = { name: 'Robin Hood', health: 30 }
+       wizard.heal.call(archer); -- uses heal function on archer
+apply function
+  - same as call except it takes an array of arguments
+  - wizard.heal.apply(archer, [100,30])
+
+bind function
+  - returns a new function
+  - wizard.heal.apply(archer, 100, 30) -> returns function
+    -- () => { return this.health = 100 }
+
+currying with bind
+  - function multiply(a, b) { return a*b; }
+    -- let multiplyTwo = multiply.bind(this, 2); -- 2 is the first argument a in this because
+    -- multiplyTwo(4) -> 8; -- 4 is the second argument b
+
+JS Types
+  - number 1
+  - boolean true
+  - string 'test'
+  - undefined (absence of definition)
+  - null (absence of a value)
+  - symbol Symbol('Test')
+  - object {}
+
+typeof
+  - typeof 5 -> number
+  - typeof true -> boolean
+  - typeof 'test' -> string
+  - typeof undefined -> undefined
+  - typeof null -> object -- bug in javascript
+  - typeof Symbol('Test') -> symbol
+  - typeof {} -> object
+  - typeof [] -> object
+  - typeof function(){} -> function (really an object)
+
+built in objects
+  - Infinitiy
+  - NaN
+  - undefined
+  - etc.
+
+Wrapper object
+  true.toString -> Boolean(true).toString();
+
+Array
+  - objects
+  - Array.isArray([1,2,3]) -> true
+  - Array.isArray({}) -> false
+
+Pass by reference vs pass by value
+  - primitives are pass by value
+  - objects are pass by reference
+
+Clone object
+  - let obj = {a: 'a', b: 'b'}
+  - let clone = Object.assign({}, obj); -> creates a SHALLOW copy of values not a copy of reference
+  - let clone2 = {...obj} -> same as clone above, SHALLOW copies values
+  - deep copy let deepCopy = JSON.parse(JSON.stringify(obj)) -- very bad performance for deep objects
+
+Type coercion (operands are different type, one will be converted to equivalent)
+  1 == '1' -> true
+  1 === '1' -> false (no coercion)
+  never use ==
+  1 -> true
+  0 -> false
+  -0, +0
+  -0 === +0 -> true (differernt values though)
+  Object.is(-0,+0) -> false
+  NaN === NaN -> false
+  Object.is(NaN,Nan) -> true
+
+Strong vs weak typing
+  - weak typing:  var a = "a"; a+ 17 = "a17"
+  - strong typing:  var a = "a"; a+ 17 = compile error
+
+Function assignment
+  - set to vars: var stuff = function(){};
+  - pass as arguments: function a(fn) { fn() };
+    + a(function(){console.log('Hi');})
+  - return functions as values
+    + function b(){
+        return function c() {console.log('bye')};
+      }
+
+Higher order function
+  - function that takes a function or returns a function
+
+Higher order functions
+  - with arrow functions
+    + const multiplyBy = (num1) => (num2) => num1*num2;
+      const multiplyByTwo = multiplyBy(2);
+      multiplyByTwo(4) -> 8
+    + could also do...
+      multiplyBy(6)(4) -> 24
+
+Closures
+  - store their enclosed data in heap so memory efficient
+  - allows for ecapsulation
+
+Singleton with Closure
+  - function initialize() {
+      let called = 0;
+      return function () {
+        if(called > 0){
+          return;
+        }else{
+          view = 'Big Data Load';
+          called++;
+          console.log('View Set');
+        }
+      }
+    }
+
+Prototypal inheritance
+  - const array = [];
+    + array.__proto__ -> returns all array functions inherited from Array parent class
+    + array.__proto__.__proto__ returns base Object all objects are created from
+  - __proto__ goes up the inheritance chain
+  - there is a base function i.e. const someFun = function a() -> someFun.__proto__ returns base object
+  - same with any object
+  inherit from parseIntPipe
+    + someObject.__proto__ = parentObject;
+      someObject.parentMethod();
+      locally set methods override
+  - hasOwnProperty function only returns properties on this object not inherited from parent
+  - don't use __proto__ in practice
+  - only functions have prototype object
+
+Inherit from other object
+  - Object.create
+    + let human = { mortal: true }; let socrates = Object.create(human); -> socrates will inherit mortal property
+
+OOP in javascript
+  - Factory functions
+  - Object.create()
+  - can use class, extends keyword, constructors, super etc.
+
+Functional programming JS
+Higher order functions
+  - either take one or more functions as an argument or returns a functions
+    + const hof = () => () => 5 // function that returns five returned
+      * hof()()
+    + const hof = (fn) => fn(5);
+      * hof(function a(x) { return x });
+currying
+  - const curriedMultiply = (a) => (b) => a*b;
+    * const curriedMultiplyBy5 = curriedMultiply(5);
+    * const curriedMultiplyBy5(3); //15
+Partial application
+  - apply function with smaller number of arguments
+    * const multiply(a, b, c) => a*b*c;
+    * const partialMultiplyBy5 = multiply.bind(null, 5);
+    * partialMultiplyBy5(4,10); // 200
+
+Pipe and Compose
+  - Ramda library
+
+  const multipyBy3 = (num) => num*3;
+  const makePositive = (num) => Math.abs(num);
+  const compose = (f, g) => (data) => f(g(data));
+  const multiplyBy3AndMakeAbsolute = compose(multipyBy3, makePositive);
+
+  pipe vs compose (pipe is left to right, compose is right to left)
+
+Async JS
+  - Promise
+    const promise = new Promise((resolve, reject) => {
+      if(true) {
+        resolve('sutff Worked');
+      } else {
+        reject('Error, it broke')
+      }
+    });
+    promise
+      .then(result => console.log(result))
+      .then(result2 => {
+        throw Error
+        console.log(result2)
+      })
+      .catch(() => console.log('error!'));
+
+    - Promise all
+      Promise.all([promise1, promise2, promise3])
+        .then(values => {
+          console.log(values);
+        })
+
+    const urls = [
+      'https://jsonplaceholder.typicode.com/users',
+      'https://jsonplaceholder.typicode.com/posts',
+      'https://jsonplaceholder.typicode.com/albums'
+    ];
+
+    try {
+    // destructure results into an array
+    const [users, posts, albums] = await Promise.all(urls.map(url => {
+      fetch(url).then(resp => resp.json);
+    }));
+    } catch(e) {
+      console.log('oops');
+    }
+
+
+  - finally
+    promise, catch, then finally
+
+  - for await of
+    const getData async function() {
+      const arrayOfPromises = urls.map(url => fetch(url));
+      for await (let request of arrayOfPromises) {
+        const data = await request.json();
+        console.log(data);
+      }
+    }
+
+  - race
+    Promise.race() // returns the first promise to resolve or fail
+
+
+jsonplaceholder.com
+live-server
